@@ -43,20 +43,22 @@ int value = 0;
 const byte numChars = 32;
 char receivedChars[numChars];
 boolean newData = false;
+int totalChars=0;
 
 bool stopMotor1 = true;
 
 int timeMotor2 = 900;
 int contTimeMotor2 = 0;
+bool stopMotor2 = false;
 
 bool moveMotor3 = false;
-int timeStartMotor3 = 350;
-int timeMotor3 = 540;
+int timeStartMotor3 = 250;
+int stepsMotor3 = 215;
 int contTimeMotor3 = 0;
 
 bool moveMotor4 = false;
-int timeStartMotor4 = 150;
-int timeMotor4 = 300;
+int timeStartMotor4 = 300;
+int stepsMotor4 = 150;
 int contTimeMotor4 = 0;
 
 // 2-wire basic config, microstepping is hardwired on the driver
@@ -87,7 +89,7 @@ void setup() {
     stepper3.setEnableActiveState(LOW);
     stepper4.setEnableActiveState(LOW);
 
-    Serial.println("Inicio programa");
+    Serial.println("Inicio programa!!");
 
 }
 
@@ -130,7 +132,7 @@ void motor1(){
 }
 
 void motor2(){
-  if(!stopMotor1 || contTimeMotor2 <= timeMotor2 ){
+  if((!stopMotor1 || contTimeMotor2 <= timeMotor2) && !stopMotor2 ){
     stepper2.move(1);
     if(stopMotor1){
       contTimeMotor2++;
@@ -139,11 +141,12 @@ void motor2(){
 }
 
 void motor3(){
- if(moveMotor3 && contTimeMotor3 <= timeMotor3){
+  
+ if(moveMotor3 && contTimeMotor3 <= (stepsMotor3+timeStartMotor3)){
     if(contTimeMotor3 > timeStartMotor3){
       stepper3.move(1);
     }
-    if(contTimeMotor3 == timeMotor3){
+    if(contTimeMotor3 == (stepsMotor3+timeStartMotor3)){
       contTimeMotor3 = 0;
       moveMotor3 = false;
     }else{
@@ -153,11 +156,11 @@ void motor3(){
 }
 
 void motor4(){
-  if(moveMotor4 && contTimeMotor4 <= timeMotor4){
+ if(moveMotor4 && contTimeMotor4 <= (stepsMotor4+timeStartMotor4)){
     if(contTimeMotor4 > timeStartMotor4){
       stepper4.move(1);
     }
-    if(contTimeMotor4 == timeMotor4){
+    if(contTimeMotor4 == (stepsMotor4+timeStartMotor4)){
       contTimeMotor4 = 0;
       moveMotor4 = false;
     }else{
@@ -180,6 +183,7 @@ void recvWithStartEndMarkers() {
             if (rc != endMarker) {
                 receivedChars[ndx] = rc;
                 ndx++;
+                totalChars++;
                 if (ndx >= numChars) {
                     ndx = numChars - 1;
                 }
@@ -205,13 +209,57 @@ void serialComOptions() {
             Serial.println("Inicio");
             stopMotor1 = false;
             contTimeMotor2 = 0;
+            totalChars = 0;
             break;
-          case 'A':
-            Serial.println("Otro dato");
-            stepper1.rotate(360*10);
+          case 'S':
+            Serial.println("PARO GENERAL");
+            stopMotor1 = true;
+            stopMotor2 = true;
+            moveMotor3 = false;
+            moveMotor4 = false;
+            totalChars = 0;
+            break;
+          case 'E':
+            String nuevaEspera = "";
+            if(receivedChars[1] == '3'){
+              Serial.println("MOD ESPERA 3");
+              for(int i = 2; i <= totalChars; i++){
+                nuevaEspera.concat(receivedChars[i]);
+              }
+              timeStartMotor3 = nuevaEspera.toInt();
+              contTimeMotor3 = 0;
+            }else if(receivedChars[1] == '4'){
+              Serial.println("MOD ESPERA 4");
+              for(int i = 2; i <= totalChars; i++){
+                nuevaEspera.concat(receivedChars[i]);
+              }
+              timeStartMotor4 = nuevaEspera.toInt();
+              contTimeMotor4 = 0;
+            }
+            totalChars = 0;
+            break;
+          case 'P':
+            String nuevosPasos = "";
+            if(receivedChars[1] == '3'){
+              Serial.println("MOD PASOS 3");
+              for(int i = 2; i <= totalChars; i++){
+                nuevosPasos.concat(receivedChars[i]);
+              }
+              stepsMotor3 = nuevosPasos.toInt();
+              contTimeMotor3 = 0;
+            }else if(receivedChars[1] == '4'){
+              Serial.println("MOD PASOS 4");
+              for(int i = 2; i <= totalChars; i++){
+                nuevosPasos.concat(receivedChars[i]);
+              }
+              stepsMotor4 = nuevosPasos.toInt();
+              contTimeMotor4 = 0;
+            }
+            totalChars = 0;
             break;
           default:
             Serial.println("default");
+            totalChars = 0;
             break;
         }
         newData = false;
