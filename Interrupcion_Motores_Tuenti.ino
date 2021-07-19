@@ -1,3 +1,4 @@
+// https://www.instructables.com/Arduino-Timer-Interrupts/
 #include <Arduino.h>
 #include "BasicStepperDriver.h"
 /// PASOS DEL MOTOR SI EL DE 1.8 GRADOS SON 200
@@ -70,7 +71,12 @@ BasicStepperDriver stepper2(MOTOR_STEPS, DIR2, STEP2, SLEEP2);
 BasicStepperDriver stepper3(MOTOR_STEPS, DIR3, STEP3, SLEEP3);
 BasicStepperDriver stepper4(MOTOR_STEPS, DIR4, STEP4, SLEEP4);
 
+
 void setup() {
+    cli();//stop interrupts
+    configT0();
+    configT1();
+
     Serial.begin(9600);
     
     stepper1.begin(RPM, MICROSTEPS);
@@ -93,14 +99,15 @@ void setup() {
     stepper4.setEnableActiveState(LOW);
 
     Serial.println("Inicio programa!!");
+    sei();//allow interrupts
 
 }
 
 void loop() {
   motor1();
   motor2();
-  motor3();
-  motor4();
+  // motor3();
+  // motor4();
   recvWithStartEndMarkers();
   serialComOptions();
   delay(2);
@@ -277,10 +284,48 @@ void serialComOptions() {
     }
 }
 
-void interrupt1(){
+configT0(){
+  //set timer0 interrupt at 2kHz (500us)
+  TCCR0A = 0;// set entire TCCR2A register to 0
+  TCCR0B = 0;// same for TCCR2B
+  TCNT0  = 0;//initialize counter value to 0
+  // set compare match register for 2khz increments
+  //compare match register = [ 16,000,000Hz/ (prescaler * desired interrupt frequency) ] - 1
+  //preescalador puede ser = 1, 8, 64, 256, and 1024
+  OCR0A = 124;// = (16*10^6) / (64*2000) - 1 (must be <256)
+  // turn on CTC mode
+  TCCR0A |= (1 << WGM01);
+  // Set CS01 and CS00 bits for 64 prescaler
+  TCCR0B |= (1 << CS01) | (1 << CS00);   
+  // enable timer compare interrupt
+  TIMSK0 |= (1 << OCIE0A);
+}
+
+configT2(){
+  //set timer2 interrupt at 2kHz
+  TCCR2A = 0;// set entire TCCR2A register to 0
+  TCCR2B = 0;// same for TCCR2B
+  TCNT2  = 0;//initialize counter value to 0
+  // set compare match register for 8khz increments
+  //compare match register = [ 16,000,000Hz/ (prescaler * desired interrupt frequency) ] - 1
+  //preescalador puede ser = 1, 8, 64, 256, and 1024
+  OCR2A = 124;// = (16*10^6) / (64*2000) - 1 (must be <256)
+  // turn on CTC mode
+  TCCR2A |= (1 << WGM21);
+  // Set CS21 bit for 64 prescaler
+  TCCR2B |= (1 << CS21) | (1 << CS20);;   
+  // enable timer compare interrupt
+  TIMSK2 |= (1 << OCIE2A);
+}
+
+ISR(TIMER0_COMPA_vect){
+//timer0 interrupt cada 500us LLAMA FUNCIÓN DE MOTOR 3
+//generates pulse wave of frequency 2kHz/2 = 1kHz (takes two cycles for full wave- toggle high then toggle low)
   motor3();
 }
 
-void interrupt2(){
+ISR(TIMER2_COMPA_vect){
+//timer1 interrupt cada 500us LLAMA FUNCIÓN MOTOR 4
+//generates pulse wave of frequency 1Hz/2 = 0.5kHz (takes two cycles for full wave- toggle high then toggle low)
   motor4();
 }
