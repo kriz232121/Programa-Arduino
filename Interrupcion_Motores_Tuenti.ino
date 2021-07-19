@@ -51,12 +51,15 @@ int timeMotor2 = 900;
 int contTimeMotor2 = 0;
 bool stopMotor2 = false;
 
-bool moveMotor3 = false;
+
+bool startMotor3 = false;
+// bool moveMotor3 = false;
 int timeStartMotor3 = 250;
 int stepsMotor3 = 215;
 int contTimeMotor3 = 0;
 
-bool moveMotor4 = false;
+bool startMotor4 = false;
+// bool moveMotor4 = false;
 int timeStartMotor4 = 300;
 int stepsMotor4 = 150;
 int contTimeMotor4 = 0;
@@ -115,14 +118,14 @@ void sensor2(){
     //MUEVE MOTOR 3
     value = digitalRead(sensorPin2);  //lectura digital de pin
     Serial.println("MOVER MOTOR 3");
-    moveMotor3 = true;
+    startMotor3 = true;
 }
 
 void sensor3(){
     //MUEVE MOTOR 4
     value = digitalRead(sensorPin3);  //lectura digital de pin
     Serial.println("MOVER MOTOR 4");
-    moveMotor4 = true;
+    startMotor4 = true;
 }
 
 void motor1(){
@@ -141,14 +144,15 @@ void motor2(){
 }
 
 void motor3(){
-  
- if(moveMotor3 && contTimeMotor3 <= (stepsMotor3+timeStartMotor3)){
+ if(startMotor3){
     if(contTimeMotor3 > timeStartMotor3){
       stepper3.move(1);
+      // moveMotor3 = true;
     }
     if(contTimeMotor3 == (stepsMotor3+timeStartMotor3)){
       contTimeMotor3 = 0;
-      moveMotor3 = false;
+      // moveMotor3 = false;
+      startMotor3 = false;
     }else{
      contTimeMotor3++; 
     }
@@ -156,13 +160,15 @@ void motor3(){
 }
 
 void motor4(){
- if(moveMotor4 && contTimeMotor4 <= (stepsMotor4+timeStartMotor4)){
+ if(startMotor4){
     if(contTimeMotor4 > timeStartMotor4){
       stepper4.move(1);
+      // moveMotor4 = true;
     }
     if(contTimeMotor4 == (stepsMotor4+timeStartMotor4)){
       contTimeMotor4 = 0;
-      moveMotor4 = false;
+      // moveMotor4 = false;
+      startMotor4 = false;
     }else{
      contTimeMotor4++; 
     }
@@ -215,8 +221,13 @@ void serialComOptions() {
             Serial.println("PARO GENERAL");
             stopMotor1 = true;
             stopMotor2 = true;
-            moveMotor3 = false;
-            moveMotor4 = false;
+            contTimeMotor2 = 0;
+            // moveMotor3 = false;
+            startMotor3 = false;
+            contTimeMotor3 = 0;
+            // moveMotor4 = false;
+            startMotor4 = false;
+            contTimeMotor4 = 0;
             totalChars = 0;
             break;
           case 'E':
@@ -264,4 +275,12 @@ void serialComOptions() {
         }
         newData = false;
     }
+}
+
+void interrupt1(){
+  motor3();
+}
+
+void interrupt2(){
+  motor4();
 }
