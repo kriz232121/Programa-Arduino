@@ -59,6 +59,7 @@ int timeStartMotor3 = 250;
 int stepsMotor3 = 215;
 int contTimeMotor3 = 0;
 
+bool disableMotor4 = false;
 bool startMotor4 = false;
 // bool moveMotor4 = false;
 int timeStartMotor4 = 300;
@@ -167,7 +168,7 @@ void motor3(){
 }
 
 void motor4(){
- if(startMotor4){
+ if(startMotor4 && !disableMotor4){
     if(contTimeMotor4 > timeStartMotor4){
       stepper4.move(1);
       // moveMotor4 = true;
@@ -275,6 +276,12 @@ void serialComOptions() {
             }
             totalChars = 0;
             break;
+          case 'D':
+            //DESHABILITAR MOTOR 4
+            disableMotor4 = true;
+          case 'H':
+            //HABILITAR MOTOR 4
+            disableMotor4 = false;
           default:
             Serial.println("default");
             totalChars = 0;
