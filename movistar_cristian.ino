@@ -51,6 +51,8 @@ int totalChars=0;
 
 bool stopMotor1 = true;
 bool stepMotor1 = true;
+int timeMotor1 = 500;
+int contTimeMotor1 = 0;
 
 int timeMotor2 = 700;
 int contTimeMotor2 = 0;
@@ -159,11 +161,17 @@ void sensor3(){
 }
 
 void motor1(){
-  if(!stopMotor1 && stepMotor1){
-    stepMotor1=false;
-    stepper1.move(1);
+//INICIA A MOVERSE DESPUÉS DE UN TIEMPO
+  if(contTimeMotor1 == timeMotor1){
+    // DA UN PASO CADA 2 LOOPS
+      if(!stopMotor1 && stepMotor1){
+        stepMotor1=false;
+        stepper1.move(1);
+      }else{
+        stepMotor1=true;
+      }
   }else{
-    stepMotor1=true;
+      contTimeMotor1++;
   }
 }
 
@@ -247,6 +255,7 @@ void serialComOptions() {
             stopMotor1 = false;
             stopMotor2 = false;
             contTimeMotor2 = 0;
+            contTimeMotor1 = 0;
             totalChars = 0;
       }else if(receivedChars[0] == 'S'){
 //        Serial.println("PARO GENERAL");
