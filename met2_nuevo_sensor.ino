@@ -254,6 +254,9 @@ void motor3(){
      contTimeMotor3++; 
   }else if(contEtiquetas == totalEtiquetas){
       Serial.println("para");
+
+      //! MODIFICAR LA CANTIDAD DE STEPS SEGÚN SE VEA CONVENIENTE
+      stepper3.move(50);
       contTimeMotor3 = 0;
       contEtiquetas = 0;
       moveMotor3 = false;
