@@ -14,7 +14,7 @@
 
 //// VALOR DEFINIDO POR EL CONTROLADRO DEL MOTOR A PASOS
 // MOTOR 1 PINES
-#define MICROSTEPS 4
+#define MICROSTEPS 8
 #define DIR 2//2
 #define STEP 3//3
 #define SLEEP 4//4
@@ -52,7 +52,7 @@ int totalChars=0;
 
 bool stopMotor1 = true;
 bool stepMotor1 = true;
-int timeMotor1 = 500;
+int timeMotor1 = 5000;
 int contTimeMotor1 = 0;
 
 int timeMotor2 = 700;
@@ -66,7 +66,8 @@ int stepsMotor3 = 215;
 int contTimeMotor3 = 0;
 bool sensorEtiqueta = false;
 int contEtiquetas = 0;
-int totalEtiquetas = 1;
+int totalEtiquetas = 2;
+bool onEtiqueta = false;
 
 bool moveMotor4 = false;
 int timeStartMotor4 = 500;
@@ -99,7 +100,7 @@ void setup() {
     attachInterrupt(2,sensorEtiq,FALLING); //PIN 21
 
     // if using enable/disable on ENABLE pin (active LOW) instead of SLEEP uncomment next line
-    stepper1.setEnableActiveState(LOW);
+    stepper1.setEnableActiveState(HIGH);
     stepper2.setEnableActiveState(LOW);
     stepper3.setEnableActiveState(LOW);
     stepper4.setEnableActiveState(LOW);
@@ -136,7 +137,6 @@ void sensor1(){
 }
 
 void sensor2(){
-    //!NUEVO SENSOR EN LUGAR DEL INFRAROJO
     //MUEVE MOTOR 3
     int cont = 0;
     int val = 0;
@@ -150,11 +150,14 @@ void sensor2(){
     //! MUEVO ESTE SERIAL WRITE A OTRO DE LOS SENSORES (3)
     // Serial.write(18);
       moveMotor3 = true;
+      contEtiquetas=0;
     }
 }
 
 void sensorEtiq(){
 
+    //Serial.println("entra");
+    //onEtiqueta
     //SISTEMA ANTIREBOTES
     int cont = 0;
     int val = 0;
@@ -166,9 +169,19 @@ void sensorEtiq(){
     }
     if(cont == 3){
         //AUMENTO CONTADOR 
-        contEtiquetas++;
+//          int val = digitalRead(sensorEtiqPin);
+//          Serial.println(val);
+//          Serial.println(onEtiqueta);
+//          if(!onEtiqueta && val == 0){
+//            onEtiqueta = true;
+//          }else if(onEtiqueta && val == 1){
+//            onEtiqueta = false;
+            contEtiquetas++;
+            Serial.println("cuenta");
+//          }
         //!CUANDO SE TERMINA DE COLOCAR ETIQUETAS SE PARA EL MOTOR 3 Y SE REINICIA SU CONTADOR
         if(contEtiquetas == totalEtiquetas){
+            Serial.println("para");
             contTimeMotor3 = 0;
             contEtiquetas = 0;
             moveMotor3 = false;
