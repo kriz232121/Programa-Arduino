@@ -64,10 +64,10 @@ bool moveMotor3 = false;
 int timeStartMotor3 = 101;
 int stepsMotor3 = 215;
 int contTimeMotor3 = 0;
-bool sensorEtiqueta = false;
 int contEtiquetas = 0;
 int totalEtiquetas = 2;
 bool onEtiqueta = false;
+int extraMoveMot3 = 50;
 
 bool moveMotor4 = false;
 int timeStartMotor4 = 500;
@@ -154,41 +154,6 @@ void sensor2(){
     }
 }
 
-// void sensorEtiq(){
-
-//     //Serial.println("entra");
-//     //onEtiqueta
-//     //SISTEMA ANTIREBOTES
-//     int cont = 0;
-//     int val = 0;
-//     //!ASUMIENDO QUE EL SENSOR DE ETIQUETAS ME DA BAJO CUANDO NO HAY ETIQUETA
-//     while(val == 0 && cont <= 2)
-//     {
-//       val = digitalRead(sensorEtiqPin);  //lectura digital de pin
-//       cont++; 
-//     }
-//     if(cont == 3){
-//         //AUMENTO CONTADOR 
-// //          int val = digitalRead(sensorEtiqPin);
-// //          Serial.println(val);
-// //          Serial.println(onEtiqueta);
-// //          if(!onEtiqueta && val == 0){
-// //            onEtiqueta = true;
-// //          }else if(onEtiqueta && val == 1){
-// //            onEtiqueta = false;
-//             contEtiquetas++;
-//             Serial.println("cuenta");
-// //          }
-//         //!CUANDO SE TERMINA DE COLOCAR ETIQUETAS SE PARA EL MOTOR 3 Y SE REINICIA SU CONTADOR
-//         if(contEtiquetas == totalEtiquetas){
-//             Serial.println("para");
-//             contTimeMotor3 = 0;
-//             contEtiquetas = 0;
-//             moveMotor3 = false;
-//         }
-//     } 
-// }
-
 void sensor3(){
     //MUEVE MOTOR 4
     int cont = 0;
@@ -256,7 +221,7 @@ void motor3(){
       Serial.println("para");
 
       //! MODIFICAR LA CANTIDAD DE STEPS SEGÚN SE VEA CONVENIENTE
-      stepper3.move(50);
+      stepper3.move(extraMoveMot3);
       contTimeMotor3 = 0;
       contEtiquetas = 0;
       moveMotor3 = false;
@@ -328,11 +293,12 @@ void serialComOptions() {
       }else if(receivedChars[0] == 'P'){
         String nuevosPasos = "";
             if(receivedChars[1] == '3'){
+              //! YA NO SETEA PASOS SINO EL MOVIMIENTO EXTRA AL FINAL DEL CONTEO DE ETIQUETAS
 //              Serial.println("MOD PASOS 3");
               for(int i = 2; i <= totalChars; i++){
                 nuevosPasos.concat(receivedChars[i]);
               }
-              stepsMotor3 = nuevosPasos.toInt();
+              extraMoveMot3 = nuevosPasos.toInt();
               contTimeMotor3 = 0;
             }else if(receivedChars[1] == '4'){
 //              Serial.println("MOD PASOS 4");
