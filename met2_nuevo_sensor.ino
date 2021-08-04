@@ -68,6 +68,7 @@ int contEtiquetas = 0;
 int totalEtiquetas = 2;
 bool onEtiqueta = false;
 int extraMoveMot3 = 50;
+int extraTime = 0;
 
 bool moveMotor4 = false;
 int timeStartMotor4 = 500;
@@ -132,6 +133,7 @@ void sensor1(){
 //      Serial.println("PARAR MOTOR 1");
       stepper1.stop();
       stopMotor1 = true;
+      extraTime = 200;
       Serial.write(15);
     }
 }
@@ -203,7 +205,7 @@ void motor3(){
  if(moveMotor3 && contEtiquetas < totalEtiquetas){
      //MANTENGO LA VELOCIDAD POR LO QUE USO EL CONTTIMEMOTOR PARA QUE DE 1 PASO CADA 2 LOOPS
      //TAMBIÉN MANTENGO EL TIEMPO DE ESPERA PARA INICIO DE ETIQUETADO
-    if(contTimeMotor3 > timeStartMotor3 && contTimeMotor3%2 == 0){
+    if(contTimeMotor3 > (timeStartMotor3 + extraTime) && contTimeMotor3%2 == 0){
       stepper3.move(1);
       
       //DESPUÉS DE DAR UN PASO VERIFICO SI EL SENSOR DETECTA CAMBIO (PASO DE ESPACIO A ETIQUETA
@@ -283,6 +285,7 @@ void serialComOptions() {
             contTimeMotor2 = 0;
             contTimeMotor1 = 0;
             totalChars = 0;
+            extraTime = 0;
       }else if(receivedChars[0] == 'S'){
 //        Serial.println("PARO GENERAL");
             stopMotor1 = true;
